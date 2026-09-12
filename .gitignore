@@ -1,0 +1,142 @@
+# ==========================================
+# Operating System Files
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ==========================================
+# IDE & Editor Files
+# ==========================================
+# Source Insight
+*.si4project/
+*.siproj
+*.siwork
+*.siproject
+*.siworkspace
+*.sip_*
+*.SearchResults
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains / CLion / Visual Studio
+.idea/
+*.user
+*.suo
+*.userosv
+*.sln.docstates
+
+# ==========================================
+# C / Embedded Firmware Build Artifacts (Keil MDK, IAR, GCC)
+# ==========================================
+# Object & Dependency Files
+*.o
+*.obj
+*.d
+*.crf
+*.dep
+*.sisc
+
+# Executables & Map/Listing Files
+*.elf
+*.hex
+*.axf
+*.map
+*.lst
+*.iex
+
+# Build output directories
+**/Output/
+**/Listings/
+**/Objects/
+**/build/
+
+# Keil MDK Project User Files
+*.uvgui.*
+*.uvopt
+*.uvoptx
+*.bak
+
+# ==========================================
+# Qt / Executables & Logs
+# ==========================================
+*.exe
+*.dll
+*.qm
+*.log
+Logs/
+**/Logs/
+
+# ==========================================
+# Python (pyassistant)
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ==========================================
+# Node.js / Web (webassistant)
+# ==========================================
+node_modules/
+webassistant/node_modules/
+webassistant/packages/*/node_modules/
+webassistant/dist/
+webassistant/packages/*/dist/
+*.tsbuildinfo
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==========================================
+# Temporary & Backup Files
+# ==========================================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+
+
+MaUWB_AOA_Assistant/
