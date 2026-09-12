@@ -1,0 +1,28 @@
+{
+  "name": "mauwb-webassistant",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Open web upper-computer for Jiuling/Makerfabs MaUWB_AOA anchors (Node + React)",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "packages/protocol",
+    "packages/server",
+    "packages/web"
+  ],
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "build": "npm run build -w @mauwb/protocol && npm run build -w @mauwb/server && npm run build -w @mauwb/web",
+    "dev": "npm run build -w @mauwb/protocol && concurrently -n server,web -c cyan,magenta \"npm run dev -w @mauwb/server\" \"npm run dev -w @mauwb/web\"",
+    "start": "npm run start -w @mauwb/server",
+    "test": "npm run test -w @mauwb/protocol",
+    "typecheck": "tsc -b packages/protocol packages/server",
+    "sample": "npm run build -w @mauwb/protocol && npm run sample -w @mauwb/server --"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "typescript": "~5.9.3"
+  }
+}

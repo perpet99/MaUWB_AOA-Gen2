@@ -1,0 +1,739 @@
+/*
+ * Tokens mirror @mauwb/protocol's theme module, restated as CSS custom
+ * properties so the chart SVGs and the chrome around them stay in one system.
+ * Light is the base; the dark block redefines only what changes.
+ */
+
+:root {
+  --surface: #fcfcfb;
+  --plane: #f9f9f7;
+  --panel: #ffffff;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: #e5e4dd;
+
+  --s0: #2a78d6;
+  --s1: #eb6834;
+  --s2: #1baf7a;
+  --s3: #4a3aa7;
+  --other: #898781;
+
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+
+  --font: ui-sans-serif, system-ui, 'Segoe UI', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  --mono: ui-monospace, SFMono-Regular, 'Cascadia Mono', Consolas, 'Liberation Mono', monospace;
+
+  --radius: 8px;
+  --gap: 12px;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --surface: #16171a;
+    --plane: #101113;
+    --panel: #1b1d21;
+    --ink: #f2f2f0;
+    --ink-2: #b9b8b4;
+    --muted: #86857f;
+    --grid: #2a2c30;
+    --axis: #3c3f44;
+    --border: #2a2c30;
+
+    --s0: #5fa4f0;
+    --s1: #f4895c;
+    --s2: #3fcb96;
+    --s3: #9186e8;
+    --other: #86857f;
+
+    --good: #3dc23d;
+    --warning: #f5c451;
+    --serious: #f0a07e;
+    --critical: #ef6a6a;
+  }
+}
+
+:root[data-theme='dark'] {
+  --surface: #16171a;
+  --plane: #101113;
+  --panel: #1b1d21;
+  --ink: #f2f2f0;
+  --ink-2: #b9b8b4;
+  --muted: #86857f;
+  --grid: #2a2c30;
+  --axis: #3c3f44;
+  --border: #2a2c30;
+
+  --s0: #5fa4f0;
+  --s1: #f4895c;
+  --s2: #3fcb96;
+  --s3: #9186e8;
+  --other: #86857f;
+
+  --good: #3dc23d;
+  --warning: #f5c451;
+  --serious: #f0a07e;
+  --critical: #ef6a6a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--plane);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ------------------------------------------------------------- layout --- */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.app-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: var(--gap);
+  padding: var(--gap);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  min-height: 0;
+  min-width: 0;
+}
+
+.column.side {
+  overflow-y: auto;
+}
+
+.views {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--gap);
+  min-height: 0;
+}
+
+/*
+ * The charts hold their height.
+ *
+ * Every child of a flex column is shrinkable by default, so when the column is
+ * short something has to give -- and left to itself the browser compresses the
+ * charts, overriding the height `aspect-ratio` just derived from the wedge.
+ * The frame log is what should yield instead: it scrolls internally, so losing
+ * height costs it nothing.
+ */
+.views,
+.chart-panel {
+  flex: none;
+}
+
+/* Whatever no longer fits scrolls, rather than being clipped by app-main. */
+@media (min-width: 1101px) {
+  .column {
+    overflow-y: auto;
+  }
+}
+
+/*
+ * Below the two-column breakpoint the shell stops being a grid.
+ *
+ * As a grid with auto rows and a definite height, the two columns were handed
+ * half the viewport each and their content -- 899 px of charts and readouts in
+ * a 242 px row -- simply overflowed, painting the side panels on top of the
+ * anchor view. Stacking them as non-shrinking flex items lets each take its
+ * natural height and the page scroll, which is what a phone wants anyway.
+ */
+@media (max-width: 1100px) {
+  .app-main {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .app-main > .column {
+    flex: none;
+  }
+  /* One scroller per page: the side column must not trap the scroll. */
+  .column.side {
+    overflow-y: visible;
+  }
+  .views {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* -------------------------------------------------------------- panel --- */
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  flex: none;
+}
+
+.panel-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.panel-sub {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
+.panel-body {
+  padding: 12px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.panel-body.flush {
+  padding: 0;
+}
+
+.panel-body.chart {
+  padding: 4px;
+  display: flex;
+  min-height: 220px;
+  flex: 1;
+}
+
+/* The tag table and frame log are capped on desktop, free-flowing on a phone. */
+.panel-body.tag-table {
+  max-height: 220px;
+}
+
+/* Takes the leftover height, and gives it back first when there is none. */
+.log-panel {
+  flex: 1 1 0;
+  min-height: 110px;
+}
+
+/* ------------------------------------------------------------ topbar --- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px var(--gap);
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  flex: none;
+}
+
+.brand {
+  font-weight: 650;
+  font-size: 13px;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.brand small {
+  display: block;
+  font-weight: 400;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.spacer {
+  flex: 1;
+}
+
+/* ------------------------------------------------------------ controls --- */
+
+label.field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.field.grow input {
+  width: 230px;
+}
+
+.panel-head.wrap {
+  flex-wrap: wrap;
+}
+
+input,
+select,
+button,
+textarea {
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+
+input:focus-visible,
+select:focus-visible,
+button:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--s0);
+  outline-offset: 1px;
+}
+
+input.mono,
+textarea.mono {
+  font-family: var(--mono);
+}
+
+button {
+  cursor: pointer;
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--muted);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: var(--s0);
+  border-color: var(--s0);
+  color: #fff;
+}
+
+button.danger {
+  background: var(--critical);
+  border-color: var(--critical);
+  color: #fff;
+}
+
+button.ghost {
+  background: transparent;
+}
+
+button.icon {
+  padding: 3px 7px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.row.tight {
+  gap: 6px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* --------------------------------------------------------------- bits --- */
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex: none;
+}
+
+.dot.open {
+  background: var(--good);
+}
+.dot.closed {
+  background: var(--muted);
+}
+.dot.opening {
+  background: var(--warning);
+}
+.dot.error {
+  background: var(--critical);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 64px;
+}
+
+.stat .k {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.stat .v {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat .v.warn {
+  color: var(--warning);
+}
+.stat .v.bad {
+  color: var(--critical);
+}
+
+.statbar {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  flex: none;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--border);
+  color: var(--ink-2);
+}
+
+.badge.alarm {
+  background: var(--critical);
+  border-color: var(--critical);
+  color: #fff;
+}
+
+.badge.low {
+  background: var(--warning);
+  border-color: var(--warning);
+  color: #241a00;
+}
+
+.notice {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.notice.error {
+  background: color-mix(in srgb, var(--critical) 14%, transparent);
+  color: var(--critical);
+}
+
+.notice.warn {
+  background: color-mix(in srgb, var(--warning) 18%, transparent);
+  color: var(--ink);
+}
+
+.notice.info {
+  color: var(--ink-2);
+}
+
+/* -------------------------------------------------------------- table --- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+th {
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  z-index: 1;
+}
+
+td {
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+
+td.mono {
+  font-family: var(--mono);
+}
+
+td.num {
+  text-align: right;
+}
+
+tr.stale td {
+  opacity: 0.45;
+}
+
+.swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+
+/* ----------------------------------------------------------- framelog --- */
+
+.log {
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.45;
+  padding: 8px 12px;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.log .t {
+  color: var(--muted);
+}
+.log .loc {
+  color: var(--ink-2);
+}
+.log .cfg {
+  color: var(--s2);
+}
+.log .raw {
+  color: var(--s3);
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 12px;
+  padding: 16px 12px;
+  text-align: center;
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.hint code {
+  font-family: var(--mono);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0 3px;
+}
+
+.warnbox {
+  border: 1px solid var(--warning);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 11px;
+  color: var(--ink);
+}
+
+/* ------------------------------------------------- expanded chart panel --- */
+
+/*
+ * A chart promoted to the whole viewport. The body drops its aspect lock and
+ * simply fills, so the SVG's own `meet` fitting decides the size -- which is
+ * what makes this worth doing in landscape, where a half disc finally has the
+ * height to match its width.
+ */
+.panel.chart-panel.expanded {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  border: none;
+  border-radius: 0;
+  background: var(--panel);
+}
+
+.panel.chart-panel.expanded .panel-body.chart {
+  aspect-ratio: auto;
+  max-height: none;
+  height: auto;
+  flex: 1;
+  padding: 8px;
+}
+
+/* The shell keeps laying out underneath; stop it scrolling behind the overlay. */
+.app.has-expanded .app-main {
+  overflow: hidden;
+}
+
+/* ------------------------------------------------------------- phone --- */
+
+@media (max-width: 760px) {
+  :root {
+    --gap: 8px;
+  }
+
+  body {
+    font-size: 14px;
+  }
+
+  .app-main {
+    padding: var(--gap);
+    gap: var(--gap);
+  }
+
+  .views {
+    gap: var(--gap);
+  }
+
+  /*
+   * Give each chart panel exactly the shape its SVG reports, so the drawing
+   * fills the full width of the screen with no letterboxing. `--chart-aspect`
+   * is set per panel in App.tsx from the same geometry the SVG uses.
+   *
+   * The max-height keeps a tall wedge (a narrow FOV, which is nearly square)
+   * from pushing everything else off a landscape screen.
+   */
+  .panel-body.chart {
+    flex: none;
+    width: 100%;
+    padding: 2px;
+    aspect-ratio: var(--chart-aspect, 1.9);
+    /*
+     * The aspect decides the height, but never a shorter panel than the fixed
+     * 220 px this had before the aspect was introduced. It only binds near
+     * +/-90, where the wedge is a half disc and therefore width-bound: the
+     * surplus shows as margin above and below. Narrower fields of view are
+     * taller than the floor and use every pixel.
+     */
+    min-height: 220px;
+    max-height: 76vh;
+  }
+
+  /* Charts are the point of the screen; the readouts scroll underneath. */
+  .panel-body.tag-table {
+    max-height: 50vh;
+  }
+
+  .log-panel {
+    flex: none;
+    min-height: 0;
+  }
+
+  /*
+   * `flex: 1` resolves to a zero basis in a content-sized column, which would
+   * collapse the log to its header. Give it a real height instead.
+   */
+  .log-panel .log {
+    flex: none;
+    height: 38vh;
+  }
+
+  /* The connection bar is the first thing on screen -- keep it to two rows. */
+  .topbar {
+    gap: 6px;
+    padding: 8px var(--gap);
+  }
+
+  .brand {
+    flex: 1 1 100%;
+    margin: 0;
+  }
+
+  .brand small {
+    display: inline;
+    margin-left: 6px;
+  }
+
+  .field.grow {
+    flex: 1 1 100%;
+  }
+
+  .field.grow input {
+    width: 100%;
+  }
+
+  /* Comfortable touch targets without making the bar taller than it must be. */
+  input,
+  select,
+  button {
+    font-size: 14px;
+    padding: 7px 10px;
+  }
+
+  button.icon {
+    padding: 5px 10px;
+    font-size: 15px;
+  }
+
+  .statbar {
+    gap: 12px;
+    padding: 8px var(--gap);
+  }
+
+  .stat {
+    min-width: 56px;
+  }
+
+  .stat .v {
+    font-size: 12px;
+  }
+}

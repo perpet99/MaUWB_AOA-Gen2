@@ -1,0 +1,5 @@
+# 시리얼 연결용 (tcp:// 나 file:// 만 쓸 거면 없어도 됩니다)
+pyserial>=3.5
+
+# 라이브 뷰어용 (mauwb_cli.py 만 쓸 거면 없어도 됩니다)
+matplotlib>=3.5
