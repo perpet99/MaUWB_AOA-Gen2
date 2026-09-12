@@ -16,6 +16,7 @@ import { WebSocketServer, type WebSocket } from 'ws';
 import type { ClientMessage, ServerMessage } from '@mauwb/protocol';
 
 import { createApi } from './api.js';
+import { stopCamera, streamCamera } from './camera.js';
 import { Session } from './session.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -29,6 +30,7 @@ const app = express();
 
 app.use(express.json({ limit: '1mb' }));
 app.use('/api', createApi(session));
+app.get('/camera.mjpeg', (_req, res) => streamCamera(res));
 
 // Serve the built UI when it exists; in dev, Vite serves it on its own port and
 // proxies /api and /ws back here.
@@ -103,6 +105,7 @@ server.listen(PORT, HOST, () => {
 async function shutdown(signal: string): Promise<void> {
   console.log(`\n${signal} -- closing link`);
   await session.disconnect().catch(() => undefined);
+  stopCamera();
   for (const ws of clients) ws.close();
   server.close(() => process.exit(0));
   // Do not hang on a stuck socket.

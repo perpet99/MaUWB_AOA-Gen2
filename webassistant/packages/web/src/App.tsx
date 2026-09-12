@@ -15,6 +15,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { CartesianView, cartesianGeometry } from './components/CartesianView';
+import { CameraPanel } from './components/CameraPanel';
 import { CommandPanel } from './components/CommandPanel';
 import { ConnectionBar } from './components/ConnectionBar';
 import { FrameLog } from './components/FrameLog';
@@ -211,6 +212,8 @@ export default function App() {
         </div>
 
         <div className="column side">
+          <CameraPanel />
+
           <section className="panel">
             <header className="panel-head">
               <span className="panel-title">config commands</span>

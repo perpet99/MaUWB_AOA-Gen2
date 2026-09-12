@@ -10,6 +10,7 @@ export default defineConfig({
     proxy: {
       '/api': { target: API_TARGET, changeOrigin: true },
       '/ws': { target: API_TARGET.replace(/^http/, 'ws'), ws: true },
+      '/camera.mjpeg': { target: API_TARGET, changeOrigin: true },
     },
   },
   build: {

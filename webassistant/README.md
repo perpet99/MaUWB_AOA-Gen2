@@ -68,10 +68,24 @@ npm start
 
 ```bash
 npm run dev
+
+
+
 ```
 
 서버는 `:8787`, Vite 개발 서버는 `:5173`에 뜹니다. Vite가 `/api`와 `/ws`를
 서버로 프록시하므로 브라우저는 <http://127.0.0.1:5173> 만 열면 됩니다.
+
+서버에 연결된 Raspberry Pi CSI 카메라는 우측 `camera` 패널에서 `Start`를
+누르면 MJPEG로 표시됩니다. 기본 장치는 `rpicam-vid`를 사용하는 CSI 카메라입니다.
+USB/V4L2 카메라를 사용할 때는 다음처럼 백엔드를 바꿉니다:
+
+```bash
+CAMERA_BACKEND=ffmpeg CAMERA_DEVICE=/dev/video2 ./run_external.sh
+```
+
+해상도와 프레임 레이트는 `CAMERA_WIDTH`, `CAMERA_HEIGHT`, `CAMERA_FPS` 환경변수로
+조정할 수 있습니다. 카메라 스트림 주소는 `/camera.mjpeg`입니다.
 
 ### 실제 장비에 연결
 

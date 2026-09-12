@@ -239,6 +239,36 @@ body {
   flex: 1;
 }
 
+.camera-body {
+  position: relative;
+  min-height: 190px;
+  padding: 0;
+  background: #080909;
+}
+
+.camera-video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: #080909;
+}
+
+.camera-placeholder,
+.camera-error {
+  position: absolute;
+  inset: 50% 12px auto;
+  transform: translateY(-50%);
+  margin: 0;
+  color: #c8c8c2;
+  text-align: center;
+  font-size: 11px;
+}
+
+.camera-error {
+  color: #f08b72;
+}
+
 /* The tag table and frame log are capped on desktop, free-flowing on a phone. */
 .panel-body.tag-table {
   max-height: 220px;
