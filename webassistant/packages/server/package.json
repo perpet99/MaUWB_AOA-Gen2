@@ -19,10 +19,12 @@
     "ws": "^8.21.3"
   },
   "optionalDependencies": {
+    "i2c-bus": "^5.2.3",
     "serialport": "^13.0.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/i2c-bus": "^5.1.2",
     "@types/node": "^24.10.1",
     "@types/ws": "^8.18.1",
     "tsx": "^4.23.13",

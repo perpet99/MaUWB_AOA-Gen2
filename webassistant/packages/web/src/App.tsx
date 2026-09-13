@@ -14,14 +14,16 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { CartesianView, cartesianGeometry } from './components/CartesianView';
 import { CameraPanel } from './components/CameraPanel';
+import { CartesianView, cartesianGeometry } from './components/CartesianView';
 import { CommandPanel } from './components/CommandPanel';
 import { ConnectionBar } from './components/ConnectionBar';
 import { FrameLog } from './components/FrameLog';
+import { PanTiltPanel } from './components/PanTiltPanel';
 import { PolarView, polarGeometry } from './components/PolarView';
 import { RecordPanel } from './components/RecordPanel';
 import { TagTable } from './components/TagTable';
+import { TrackingPanel } from './components/TrackingPanel';
 import { PHONE_QUERY, useMediaQuery } from './useMediaQuery';
 import { useSession } from './useSession';
 
@@ -42,7 +44,7 @@ export default function App() {
   // renders the wedge at roughly 1:1 with the viewBox, where 7 units is ~7 px.
   const uiScale = isPhone ? 1.9 : 1;
 
-  const { state, connected, notices, dismissNotice, tracks, log, clear, setIncludeRaw } = useSession({
+  const { state, connected, notices, dismissNotice, tracks, tracking, log, clear, setIncludeRaw } = useSession({
     trail,
   });
 
@@ -213,6 +215,8 @@ export default function App() {
 
         <div className="column side">
           <CameraPanel />
+          <PanTiltPanel />
+          <TrackingPanel tracks={tracks} tracking={tracking} />
 
           <section className="panel">
             <header className="panel-head">

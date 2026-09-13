@@ -27,8 +27,10 @@ import {
   type SendResponse,
 } from '@mauwb/protocol';
 
+import { centerPanTilt, getPanTiltState, movePanTilt, type PanTiltDirection } from './panTilt.js';
 import { writeSample } from './sample.js';
 import type { Session } from './session.js';
+import type { Tracker } from './tracking.js';
 import { listSerialPorts } from './transport.js';
 
 /** Express 5 forwards rejected promises to the error handler, but being explicit keeps the 500s readable. */
@@ -55,7 +57,7 @@ function parseAddr(v: unknown, field: string): bigint {
   }
 }
 
-export function createApi(session: Session): Router {
+export function createApi(session: Session, tracker: Tracker): Router {
   const api = Router();
 
   api.get(
@@ -137,6 +139,70 @@ export function createApi(session: Session): Router {
       const bytes = fromHex(hex);
       const frame = parseFrame(bytes, verify);
       res.json({ frame: toWireFrame(frame, Date.now(), true) });
+    }),
+  );
+
+  api.get(
+    '/pantilt',
+    wrap(async (_req, res) => {
+      res.json({ state: await getPanTiltState() });
+    }),
+  );
+
+  api.post(
+    '/pantilt/move',
+    wrap(async (req, res) => {
+      const body = req.body as { direction?: string; step?: number };
+      const direction = body?.direction;
+      if (direction !== 'up' && direction !== 'down' && direction !== 'left' && direction !== 'right') {
+        throw new Error('direction must be one of: up, down, left, right');
+      }
+      if (tracker.state.active) tracker.stop();
+      const step = body.step && body.step > 0 ? body.step : 10;
+      const state = await movePanTilt(direction as PanTiltDirection, step);
+      res.json({ state });
+    }),
+  );
+
+  api.post(
+    '/pantilt/center',
+    wrap(async (_req, res) => {
+      if (tracker.state.active) tracker.stop();
+      const state = await centerPanTilt();
+      res.json({ state });
+    }),
+  );
+
+  api.get(
+    '/tracking',
+    wrap(async (_req, res) => {
+      res.json({ state: tracker.state });
+    }),
+  );
+
+  api.post(
+    '/tracking/start',
+    wrap(async (req, res) => {
+      const body = req.body as {
+        tagAddr?: number;
+        thresholdDeg?: number;
+        stepDeg?: number;
+        cooldownMs?: number;
+      };
+      if (typeof body?.tagAddr !== 'number') throw new Error('tagAddr is required');
+      const state = await tracker.start(body.tagAddr, {
+        thresholdDeg: body.thresholdDeg,
+        stepDeg: body.stepDeg,
+        cooldownMs: body.cooldownMs,
+      });
+      res.json({ state });
+    }),
+  );
+
+  api.post(
+    '/tracking/stop',
+    wrap(async (_req, res) => {
+      res.json({ state: tracker.stop() });
     }),
   );
 

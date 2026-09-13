@@ -17,7 +17,9 @@ import type { ClientMessage, ServerMessage } from '@mauwb/protocol';
 
 import { createApi } from './api.js';
 import { stopCamera, streamCamera } from './camera.js';
+import { stopPanTilt } from './panTilt.js';
 import { Session } from './session.js';
+import { Tracker } from './tracking.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT ?? 8787);
@@ -26,10 +28,11 @@ const HOST = process.env.HOST ?? '127.0.0.1';
 const WEB_DIST = path.resolve(HERE, '../../web/dist');
 
 const session = new Session();
+const tracker = new Tracker();
 const app = express();
 
 app.use(express.json({ limit: '1mb' }));
-app.use('/api', createApi(session));
+app.use('/api', createApi(session, tracker));
 app.get('/camera.mjpeg', (_req, res) => streamCamera(res));
 
 // Serve the built UI when it exists; in dev, Vite serves it on its own port and
@@ -65,6 +68,7 @@ function broadcast(msg: ServerMessage): void {
 wss.on('connection', (ws) => {
   clients.add(ws);
   send(ws, { type: 'hello', state: session.state, protocolVersion: 1 });
+  send(ws, { type: 'tracking', state: tracker.state });
 
   ws.on('message', (data) => {
     let msg: ClientMessage;
@@ -87,9 +91,20 @@ wss.on('connection', (ws) => {
   ws.on('error', () => clients.delete(ws));
 });
 
-session.on('frames', (frames) => broadcast({ type: 'frames', frames }));
+session.on('frames', (frames) => {
+  broadcast({ type: 'frames', frames });
+  tracker.onFrames(frames);
+});
 session.on('state', (state) => broadcast({ type: 'state', state }));
 session.on('notice', (level, message) => {
+  broadcast({ type: 'notice', level, message });
+  const line = `[${level}] ${message}`;
+  if (level === 'error') console.error(line);
+  else console.log(line);
+});
+
+tracker.on('state', (state) => broadcast({ type: 'tracking', state }));
+tracker.on('notice', (level, message) => {
   broadcast({ type: 'notice', level, message });
   const line = `[${level}] ${message}`;
   if (level === 'error') console.error(line);
@@ -106,6 +121,8 @@ async function shutdown(signal: string): Promise<void> {
   console.log(`\n${signal} -- closing link`);
   await session.disconnect().catch(() => undefined);
   stopCamera();
+  stopPanTilt();
+  tracker.stop();
   for (const ws of clients) ws.close();
   server.close(() => process.exit(0));
   // Do not hang on a stuck socket.

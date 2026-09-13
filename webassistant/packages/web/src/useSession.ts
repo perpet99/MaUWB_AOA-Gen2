@@ -10,7 +10,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { ServerMessage, SessionState, WireFrame, WireLocFrame } from '@mauwb/protocol';
+import type { ServerMessage, SessionState, TrackingState, WireFrame, WireLocFrame } from '@mauwb/protocol';
 
 export interface TagTrack {
   addr: number;
@@ -72,6 +72,7 @@ export function useSession(opts: UseSessionOptions = {}) {
   const [state, setState] = useState<SessionState>(emptyState);
   const [connected, setConnected] = useState(false);
   const [notices, setNotices] = useState<Notice[]>([]);
+  const [tracking, setTracking] = useState<TrackingState | null>(null);
   const [, bump] = useState(0);
 
   const tracksRef = useRef<Map<number, TagTrack>>(new Map());
@@ -166,6 +167,9 @@ export function useSession(opts: UseSessionOptions = {}) {
           case 'frames':
             pushFrames(msg.frames);
             break;
+          case 'tracking':
+            setTracking(msg.state);
+            break;
           case 'notice':
             setNotices((prev) =>
               [
@@ -220,6 +224,7 @@ export function useSession(opts: UseSessionOptions = {}) {
     notices,
     dismissNotice,
     tracks,
+    tracking,
     log: logRef.current,
     clear,
     setIncludeRaw,

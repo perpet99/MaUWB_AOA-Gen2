@@ -87,6 +87,18 @@ CAMERA_BACKEND=ffmpeg CAMERA_DEVICE=/dev/video2 ./run_external.sh
 해상도와 프레임 레이트는 `CAMERA_WIDTH`, `CAMERA_HEIGHT`, `CAMERA_FPS` 환경변수로
 조정할 수 있습니다. 카메라 스트림 주소는 `/camera.mjpeg`입니다.
 
+Waveshare Pan-Tilt HAT(PCA9685, I2C 0x40)가 연결되어 있으면 우측 `pan / tilt`
+패널의 방향 버튼으로 서보를 부드럽게 움직일 수 있습니다. 채널·각도 범위는
+`PANTILT_PAN_CHANNEL`, `PANTILT_TILT_CHANNEL`, `PANTILT_PAN_MIN/MAX`,
+`PANTILT_TILT_MIN/MAX`, `PANTILT_CENTER_PAN/TILT` 환경변수로 조정합니다.
+네이티브 모듈 `i2c-bus`가 없으면 이 패널은 비활성 상태로만 표시됩니다.
+
+`tracking` 패널에서 태그를 선택하고 **Start tracking**을 누르면, 해당 태그의
+UWB 각도가 임계값(기본 10°)을 벗어날 때마다 pan을 자동으로 보정해 태그를
+계속 정면에 둡니다. 임계각·보정 스텝·쿨다운은 시작 전 설정할 수 있고,
+태그 신호가 끊기면 마지막 위치를 유지한 채 보정만 멈춥니다. 방향키나
+중앙 복귀 버튼을 수동으로 누르면 트래킹은 자동으로 중지됩니다.
+
 ### 실제 장비에 연결
 
 source 입력란에 다음 중 하나를 넣습니다.

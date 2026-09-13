@@ -6,6 +6,7 @@ import type {
   SendResponse,
   SerialPortInfo,
   SessionState,
+  TrackingState,
   WireFrame,
 } from '@mauwb/protocol';
 
@@ -68,4 +69,26 @@ export const api = {
 
   makeSample: (opts: { path?: string; tags?: number; seconds?: number; rssi?: boolean }) =>
     post<{ path: string; frames: number }>('/api/sample', opts),
+
+  panTiltStatus: () => request<{ state: PanTiltState }>('/api/pantilt'),
+
+  panTiltMove: (direction: 'up' | 'down' | 'left' | 'right', step?: number) =>
+    post<{ state: PanTiltState }>('/api/pantilt/move', { direction, step }),
+
+  panTiltCenter: () => post<{ state: PanTiltState }>('/api/pantilt/center'),
+
+  trackingStatus: () => request<{ state: TrackingState }>('/api/tracking'),
+
+  trackingStart: (opts: { tagAddr: number; thresholdDeg?: number; stepDeg?: number; cooldownMs?: number }) =>
+    post<{ state: TrackingState }>('/api/tracking/start', opts),
+
+  trackingStop: () => post<{ state: TrackingState }>('/api/tracking/stop'),
 };
+
+export interface PanTiltState {
+  pan: number;
+  tilt: number;
+  moving: boolean;
+  available: boolean;
+  error: string | null;
+}

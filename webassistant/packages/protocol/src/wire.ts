@@ -171,7 +171,24 @@ export type ServerMessage =
   | { type: 'hello'; state: SessionState; protocolVersion: 1 }
   | { type: 'frames'; frames: WireFrame[] }
   | { type: 'state'; state: SessionState }
+  | { type: 'tracking'; state: TrackingState }
   | { type: 'notice'; level: 'info' | 'warn' | 'error'; message: string };
+
+/** Auto-pan-to-follow-tag state; see server/src/tracking.ts for the control loop. */
+export interface TrackingState {
+  active: boolean;
+  /** short address (`tagAddr16`) of the tag being followed */
+  tagAddr: number | null;
+  thresholdDeg: number;
+  stepDeg: number;
+  cooldownMs: number;
+  lastAngleDeg: number | null;
+  lastCorrectionAt: number | null;
+  /** no LOC frame for the tracked tag within the stale window */
+  stale: boolean;
+  /** the last correction did not move the servo -- pan is pinned at its configured limit */
+  panLimitReached: boolean;
+}
 
 export type ClientMessage =
   | { type: 'ping' }
