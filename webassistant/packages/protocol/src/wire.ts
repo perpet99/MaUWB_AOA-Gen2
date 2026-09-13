@@ -179,6 +179,8 @@ export interface TrackingState {
   active: boolean;
   /** short address (`tagAddr16`) of the tag being followed */
   tagAddr: number | null;
+  panMinDeg: number;
+  panMaxDeg: number;
   thresholdDeg: number;
   stepDeg: number;
   cooldownMs: number;

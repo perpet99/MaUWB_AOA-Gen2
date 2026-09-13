@@ -181,16 +181,35 @@ export function createApi(session: Session, tracker: Tracker): Router {
   );
 
   api.post(
+    '/tracking/settings',
+    wrap(async (req, res) => {
+      if (tracker.state.active) throw new Error('stop tracking before changing settings');
+      const body = req.body as {
+        panMinDeg?: number;
+        panMaxDeg?: number;
+        thresholdDeg?: number;
+        stepDeg?: number;
+        cooldownMs?: number;
+      };
+      res.json({ state: tracker.configure(body) });
+    }),
+  );
+
+  api.post(
     '/tracking/start',
     wrap(async (req, res) => {
       const body = req.body as {
         tagAddr?: number;
+        panMinDeg?: number;
+        panMaxDeg?: number;
         thresholdDeg?: number;
         stepDeg?: number;
         cooldownMs?: number;
       };
       if (typeof body?.tagAddr !== 'number') throw new Error('tagAddr is required');
       const state = await tracker.start(body.tagAddr, {
+        panMinDeg: body.panMinDeg,
+        panMaxDeg: body.panMaxDeg,
         thresholdDeg: body.thresholdDeg,
         stepDeg: body.stepDeg,
         cooldownMs: body.cooldownMs,

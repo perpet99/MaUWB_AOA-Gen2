@@ -30,6 +30,11 @@ const LED0_ON_L = 0x06;
 
 export type PanTiltDirection = 'up' | 'down' | 'left' | 'right';
 
+export interface PanLimits {
+  min: number;
+  max: number;
+}
+
 export interface PanTiltState {
   pan: number;
   tilt: number;
@@ -177,12 +182,18 @@ export async function getPanTiltState(): Promise<PanTiltState> {
   return { ...state, available: pwm !== null, error: initError };
 }
 
-export async function movePanTilt(direction: PanTiltDirection, stepDeg = 10): Promise<PanTiltState> {
+export async function movePanTilt(
+  direction: PanTiltDirection,
+  stepDeg = 10,
+  panLimits: PanLimits = { min: PAN_MIN, max: PAN_MAX },
+): Promise<PanTiltState> {
   const driver = await ensureDriver();
   let targetPan = state.pan;
   let targetTilt = state.tilt;
-  if (direction === 'left') targetPan = clamp(state.pan - stepDeg, PAN_MIN, PAN_MAX);
-  if (direction === 'right') targetPan = clamp(state.pan + stepDeg, PAN_MIN, PAN_MAX);
+  const panMin = clamp(panLimits.min, PAN_MIN, PAN_MAX);
+  const panMax = clamp(panLimits.max, panMin, PAN_MAX);
+  if (direction === 'left') targetPan = clamp(state.pan - stepDeg, panMin, panMax);
+  if (direction === 'right') targetPan = clamp(state.pan + stepDeg, panMin, panMax);
   if (direction === 'up') targetTilt = clamp(state.tilt - stepDeg, TILT_MIN, TILT_MAX);
   if (direction === 'down') targetTilt = clamp(state.tilt + stepDeg, TILT_MIN, TILT_MAX);
   return animateTo(driver, targetPan, targetTilt);

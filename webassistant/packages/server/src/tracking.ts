@@ -21,6 +21,8 @@ const STALE_MS = 1500;
 const STALE_POLL_MS = 500;
 
 export interface TrackingOptions {
+  panMinDeg?: number;
+  panMaxDeg?: number;
   thresholdDeg?: number;
   stepDeg?: number;
   cooldownMs?: number;
@@ -34,6 +36,8 @@ export interface TrackerEvents {
 export class Tracker extends EventEmitter {
   private active = false;
   private tagAddr: number | null = null;
+  private panMinDeg = 0;
+  private panMaxDeg = 180;
   private thresholdDeg = DEFAULT_THRESHOLD_DEG;
   private stepDeg = DEFAULT_STEP_DEG;
   private cooldownMs = DEFAULT_COOLDOWN_MS;
@@ -61,6 +65,8 @@ export class Tracker extends EventEmitter {
     return {
       active: this.active,
       tagAddr: this.tagAddr,
+      panMinDeg: this.panMinDeg,
+      panMaxDeg: this.panMaxDeg,
       thresholdDeg: this.thresholdDeg,
       stepDeg: this.stepDeg,
       cooldownMs: this.cooldownMs,
@@ -71,11 +77,24 @@ export class Tracker extends EventEmitter {
     };
   }
 
-  async start(tagAddr: number, opts: TrackingOptions = {}): Promise<TrackingState> {
-    this.tagAddr = tagAddr;
+  configure(opts: TrackingOptions): TrackingState {
+    const panMinDeg = opts.panMinDeg ?? 0;
+    const panMaxDeg = opts.panMaxDeg ?? 180;
+    if (!Number.isFinite(panMinDeg) || !Number.isFinite(panMaxDeg) || panMinDeg < 0 || panMaxDeg > 180 || panMinDeg >= panMaxDeg) {
+      throw new Error('pan minimum and maximum must be within 0-180 degrees, with minimum below maximum');
+    }
+    this.panMinDeg = panMinDeg;
+    this.panMaxDeg = panMaxDeg;
     this.thresholdDeg = opts.thresholdDeg ?? DEFAULT_THRESHOLD_DEG;
     this.stepDeg = opts.stepDeg ?? DEFAULT_STEP_DEG;
     this.cooldownMs = opts.cooldownMs ?? DEFAULT_COOLDOWN_MS;
+    this.publish();
+    return this.state;
+  }
+
+  async start(tagAddr: number, opts: TrackingOptions = {}): Promise<TrackingState> {
+    this.configure(opts);
+    this.tagAddr = tagAddr;
     this.active = true;
     this.lastAngleDeg = null;
     this.lastSeenAt = Date.now();
@@ -135,7 +154,7 @@ export class Tracker extends EventEmitter {
     this.lastCorrectionAt = Date.now();
     this.correcting = true;
 
-    movePanTilt(direction, this.stepDeg)
+    movePanTilt(direction, this.stepDeg, { min: this.panMinDeg, max: this.panMaxDeg })
       .then((panTilt) => {
         const pinned = before !== null && panTilt.pan === before;
         if (pinned !== this.panLimitReached) {

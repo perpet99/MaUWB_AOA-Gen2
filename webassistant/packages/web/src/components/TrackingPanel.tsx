@@ -12,6 +12,8 @@ export function TrackingPanel({
   tracking: TrackingState | null;
 }) {
   const [tagAddr, setTagAddr] = useState<number | null>(null);
+  const [panMinDeg, setPanMinDeg] = useState(0);
+  const [panMaxDeg, setPanMaxDeg] = useState(180);
   const [thresholdDeg, setThresholdDeg] = useState(10);
   const [stepDeg, setStepDeg] = useState(10);
   const [cooldownMs, setCooldownMs] = useState(400);
@@ -23,6 +25,15 @@ export function TrackingPanel({
     if (tagAddr === null && tracks.length > 0) setTagAddr(tracks[0].addr);
   }, [tracks, tagAddr]);
 
+  useEffect(() => {
+    if (!tracking) return;
+    setPanMinDeg(tracking.panMinDeg);
+    setPanMaxDeg(tracking.panMaxDeg);
+    setThresholdDeg(tracking.thresholdDeg);
+    setStepDeg(tracking.stepDeg);
+    setCooldownMs(tracking.cooldownMs);
+  }, [tracking]);
+
   const active = tracking?.active ?? false;
 
   async function start() {
@@ -30,7 +41,7 @@ export function TrackingPanel({
     setBusy(true);
     setError(null);
     try {
-      await api.trackingStart({ tagAddr, thresholdDeg, stepDeg, cooldownMs });
+      await api.trackingStart({ tagAddr, panMinDeg, panMaxDeg, thresholdDeg, stepDeg, cooldownMs });
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -43,6 +54,31 @@ export function TrackingPanel({
     setError(null);
     try {
       await api.trackingStop();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function saveSettings(next: {
+    panMinDeg?: number;
+    panMaxDeg?: number;
+    thresholdDeg?: number;
+    stepDeg?: number;
+    cooldownMs?: number;
+  }) {
+    if (!tracking) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await api.trackingSettings({
+        panMinDeg: next.panMinDeg ?? tracking.panMinDeg,
+        panMaxDeg: next.panMaxDeg ?? tracking.panMaxDeg,
+        thresholdDeg: next.thresholdDeg ?? tracking.thresholdDeg,
+        stepDeg: next.stepDeg ?? tracking.stepDeg,
+        cooldownMs: next.cooldownMs ?? tracking.cooldownMs,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -74,11 +110,33 @@ export function TrackingPanel({
 
         <div className="row tight">
           <label className="field">
+            pan min
+            <input
+              type="number"
+              min="0"
+              max="179"
+              value={panMinDeg}
+              disabled={active || busy}
+              onChange={(e) => void saveSettings({ panMinDeg: Number(e.target.value) })}
+            />
+          </label>
+          <label className="field">
+            pan max
+            <input
+              type="number"
+              min="1"
+              max="180"
+              value={panMaxDeg}
+              disabled={active || busy}
+              onChange={(e) => void saveSettings({ panMaxDeg: Number(e.target.value) })}
+            />
+          </label>
+          <label className="field">
             threshold
             <select
               value={thresholdDeg}
-              disabled={active}
-              onChange={(e) => setThresholdDeg(Number(e.target.value))}
+              disabled={active || busy}
+              onChange={(e) => void saveSettings({ thresholdDeg: Number(e.target.value) })}
             >
               {[5, 10, 15, 20].map((v) => (
                 <option key={v} value={v}>
@@ -89,7 +147,11 @@ export function TrackingPanel({
           </label>
           <label className="field">
             step
-            <select value={stepDeg} disabled={active} onChange={(e) => setStepDeg(Number(e.target.value))}>
+            <select
+              value={stepDeg}
+              disabled={active || busy}
+              onChange={(e) => void saveSettings({ stepDeg: Number(e.target.value) })}
+            >
               {[5, 10, 15, 20].map((v) => (
                 <option key={v} value={v}>
                   {v}°
@@ -101,8 +163,8 @@ export function TrackingPanel({
             cooldown
             <select
               value={cooldownMs}
-              disabled={active}
-              onChange={(e) => setCooldownMs(Number(e.target.value))}
+              disabled={active || busy}
+              onChange={(e) => void saveSettings({ cooldownMs: Number(e.target.value) })}
             >
               {[200, 400, 600, 1000].map((v) => (
                 <option key={v} value={v}>

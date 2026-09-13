@@ -159,7 +159,7 @@ export default function App() {
                 <label className="field">
                   range
                   <select value={rangeM} onChange={(e) => setRangeM(Number(e.target.value))}>
-                    {[3, 5, 7, 10, 15, 20, 30].map((r) => (
+                    {[3, 5, 7, 10, 15, 20, 30, 40 ,50].map((r) => (
                       <option key={r} value={r}>
                         {r} m
                       </option>

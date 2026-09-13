@@ -79,7 +79,22 @@ export const api = {
 
   trackingStatus: () => request<{ state: TrackingState }>('/api/tracking'),
 
-  trackingStart: (opts: { tagAddr: number; thresholdDeg?: number; stepDeg?: number; cooldownMs?: number }) =>
+  trackingSettings: (opts: {
+    panMinDeg: number;
+    panMaxDeg: number;
+    thresholdDeg: number;
+    stepDeg: number;
+    cooldownMs: number;
+  }) => post<{ state: TrackingState }>('/api/tracking/settings', opts),
+
+  trackingStart: (opts: {
+    tagAddr: number;
+    panMinDeg?: number;
+    panMaxDeg?: number;
+    thresholdDeg?: number;
+    stepDeg?: number;
+    cooldownMs?: number;
+  }) =>
     post<{ state: TrackingState }>('/api/tracking/start', opts),
 
   trackingStop: () => post<{ state: TrackingState }>('/api/tracking/stop'),
